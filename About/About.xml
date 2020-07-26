@@ -1,7 +1,7 @@
 <ModMetaData>
 	<name>Perishable Spoil Time Filter</name>
 	<author>MrHacky</author>
-    <packageId>MrHacky.PerishableSpoilTimeFilter</packageId>
+		<packageId>MrHacky.PerishableSpoilTimeFilter</packageId>
 	<supportedVersions>
 		<li>1.1</li>
 	</supportedVersions>
