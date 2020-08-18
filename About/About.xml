@@ -4,6 +4,7 @@
 		<packageId>MrHacky.PerishableSpoilTimeFilter</packageId>
 	<supportedVersions>
 		<li>1.1</li>
+		<li>1.2</li>
 	</supportedVersions>
 	<description>Adds a 'spoil time' filter to stockpile and ingredient selectors.</description>
 	<url>https://steamcommunity.com/sharedfiles/filedetails/?id=2178652457</url>
