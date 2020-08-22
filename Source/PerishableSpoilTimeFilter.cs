@@ -70,7 +70,7 @@ namespace PerishableSpoilTimeFilter
 
     class MyWorldComponent : WorldComponent
     {
-        public readonly Dictionary<ThingFilter, WrappedIntRange> filterSpoilTimes = new Dictionary<ThingFilter, WrappedIntRange>();
+        private Dictionary<ThingFilter, WrappedIntRange> filterSpoilTimes = new Dictionary<ThingFilter, WrappedIntRange>();
         public MyWorldComponent(World world)
             : base(world)
         {
