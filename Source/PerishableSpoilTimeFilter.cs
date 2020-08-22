@@ -76,12 +76,10 @@ namespace PerishableSpoilTimeFilter
         public MyWorldComponent(World world)
             : base(world)
         {
-            //Log.Message("MyWorldComponent");
         }
 
         public ref IntRange getSpoilTime(ThingFilter filter)
         {
-            //Log.Message("getSpoilTime");
             if (!filterSpoilTimes.ContainsKey(filter))
                 filterSpoilTimes[filter] = new WrappedIntRange(0, 30);
             WrappedIntRange w = filterSpoilTimes[filter];
@@ -91,10 +89,7 @@ namespace PerishableSpoilTimeFilter
         public bool ShowSpoilTime(ThingCategoryDef catDef)
         {
             if (!cacheShowSpoilTime.ContainsKey(catDef))
-            {
                 cacheShowSpoilTime[catDef] = CalculateShowSpoilTime(catDef);
-                Log.Message($"CalculateShowSpoilTime: {catDef} -> {cacheShowSpoilTime[catDef]}");
-            }
             return cacheShowSpoilTime[catDef];
         }
 
@@ -120,7 +115,7 @@ namespace PerishableSpoilTimeFilter
         // this static constructor runs to create a HarmonyInstance and install a patch.
         static HarmonyPatches()
         {
-            //Log.Message("HarmonyPatches!"); //Outputs "Hello World!" to the dev console.
+            Log.Message("[PerishableSpoilTimeFilter] Initializing.");
 
             Harmony harmony = new Harmony("MrHacky.PerishableSpoilTimeFilter");
 
@@ -167,14 +162,12 @@ namespace PerishableSpoilTimeFilter
             {
                 IntRange spoilTickRange = SpoilTimeCalc.convertToTicks(world.getSpoilTime(__instance));
                 int spoilTicks = rot.TicksUntilRotAtTemp(25.0f);
-                //Log.Message($"rot ticks: {spoilTicks} ({spoilTickRange.min}, {spoilTickRange.max})");
 
                 if (spoilTickRange.min == -1 || spoilTicks < spoilTickRange.min)
                     __result = false;
                 else if (spoilTickRange.max != -1 && spoilTicks > spoilTickRange.max)
                     __result = false;
             }
-            //Log.Message("IsAllowed");
         }
 
         public static void DrawSpoilTimeFilterConfig(ref float y, float width, ThingFilter filter)
@@ -182,7 +175,6 @@ namespace PerishableSpoilTimeFilter
             MyWorldComponent world = Find.World.GetComponent<MyWorldComponent>();
             if (!world.ShowSpoilTime(filter))
                 return;
-            Log.Message($"1:{filter.DisplayRootCategory.Label}");
             Rect rect = new Rect(20f, y, width - 20f, 28f);
             ref IntRange local = ref world.getSpoilTime(filter);
             IntRange spoilTicks = SpoilTimeCalc.convertToTicks(local);
