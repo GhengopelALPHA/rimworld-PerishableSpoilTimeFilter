@@ -48,13 +48,13 @@ namespace PerishableSpoilTimeFilter
         public static string spoilTimeTicksToString(int spoilTime)
         {
             if (spoilTime == -1)
-                return "forever";
+                return "SpoilTime_Forever".Translate();
             return spoilTime.ToStringTicksToPeriod(false, false, false, true);
         }
 
         public static string spoilTimeTicksToString(IntRange spoilTicks)
         {
-            return $"Spoils: {spoilTimeTicksToString(spoilTicks.min)} - {spoilTimeTicksToString(spoilTicks.max)}";
+            return "SpoilTime_MinMax_Label".Translate(spoilTimeTicksToString(spoilTicks.min), spoilTimeTicksToString(spoilTicks.max));
         }
     }
 
@@ -90,6 +90,8 @@ namespace PerishableSpoilTimeFilter
     [StaticConstructorOnStartup]
     static class HarmonyPatches
     {
+        static string MagicTranslatePrefix = "{MrHacky.TranslatedAlready}";
+
         // this static constructor runs to create a HarmonyInstance and install a patch.
         static HarmonyPatches()
         {
@@ -116,8 +118,22 @@ namespace PerishableSpoilTimeFilter
                 AccessTools.Method(typeof(ThingFilterUI), "DrawHitPointsFilterConfig"),
                 postfix: new HarmonyMethod(typeof(HarmonyPatches).GetMethod(nameof(HarmonyPatches.DrawSpoilTimeFilterConfig)))
             );
+
+            harmony.Patch(
+                AccessTools.Method(typeof(Verse.Translator), nameof(Verse.Translator.Translate), new Type[] { typeof(string) }),
+                prefix: new HarmonyMethod(typeof(HarmonyPatches).GetMethod(nameof(HarmonyPatches.Translate_Prefix)))
+            );
         }
 
+        public static bool Translate_Prefix(string key, ref TaggedString __result)
+        {
+            if (key.StartsWith(MagicTranslatePrefix))
+            {
+                __result = key.Substring(MagicTranslatePrefix.Length);
+                return false;
+            }
+            return true;
+        }
         public static void IsAllowed_Postfix(ThingFilter __instance, ref bool __result, Thing t)
         {
             CompRottable rot = t.TryGetComp<CompRottable>();
@@ -158,7 +174,7 @@ namespace PerishableSpoilTimeFilter
             ref IntRange local = ref world.getSpoilTime(filter);
             IntRange spoilTicks = SpoilTimeCalc.convertToTicks(local);
             Widgets.IntRange(rect, 1884285639, ref local, 0, 30,
-                labelKey: SpoilTimeCalc.spoilTimeTicksToString(spoilTicks)
+                labelKey: MagicTranslatePrefix + SpoilTimeCalc.spoilTimeTicksToString(spoilTicks)
             );
             y += 28f;
             y += 5f;

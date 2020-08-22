@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+  <SpoilTime_Forever>forever</SpoilTime_Forever>
+  <SpoilTime_MinMax_Label>Spoils: {0} - {1}</SpoilTime_MinMax_Label>
+</LanguageData>
