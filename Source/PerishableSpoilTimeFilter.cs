@@ -156,6 +156,9 @@ namespace PerishableSpoilTimeFilter
         }
         public static void IsAllowed_Postfix(ThingFilter __instance, ref bool __result, Thing t)
         {
+            if (!__result)
+                return;
+
             MyWorldComponent world = Find.World.GetComponent<MyWorldComponent>();
             CompRottable rot = t.TryGetComp<CompRottable>();
             if (rot != null && world.ShowSpoilTime(__instance))
