@@ -71,6 +71,8 @@ namespace PerishableSpoilTimeFilter
     class MyWorldComponent : WorldComponent
     {
         private Dictionary<ThingFilter, WrappedIntRange> filterSpoilTimes = new Dictionary<ThingFilter, WrappedIntRange>();
+        private Dictionary<ThingCategoryDef, bool> cacheShowSpoilTime = new Dictionary<ThingCategoryDef, bool>();
+
         public MyWorldComponent(World world)
             : base(world)
         {
@@ -84,6 +86,29 @@ namespace PerishableSpoilTimeFilter
                 filterSpoilTimes[filter] = new WrappedIntRange(0, 30);
             WrappedIntRange w = filterSpoilTimes[filter];
             return ref w.value;
+        }
+
+        public bool ShowSpoilTime(ThingCategoryDef catDef)
+        {
+            if (!cacheShowSpoilTime.ContainsKey(catDef))
+            {
+                cacheShowSpoilTime[catDef] = CalculateShowSpoilTime(catDef);
+                Log.Message($"CalculateShowSpoilTime: {catDef} -> {cacheShowSpoilTime[catDef]}");
+            }
+            return cacheShowSpoilTime[catDef];
+        }
+
+        public bool ShowSpoilTime(ThingFilter filter)
+        {
+            return ShowSpoilTime(filter.DisplayRootCategory.catDef);
+        }
+
+        private static bool CalculateShowSpoilTime(ThingCategoryDef catDef)
+        {
+            foreach (ThingDef descendantThingDef in catDef.DescendantThingDefs)
+                if (descendantThingDef.HasComp(typeof(CompRottable)))
+                    return true;
+            return false;
         }
     }
 
@@ -136,10 +161,10 @@ namespace PerishableSpoilTimeFilter
         }
         public static void IsAllowed_Postfix(ThingFilter __instance, ref bool __result, Thing t)
         {
+            MyWorldComponent world = Find.World.GetComponent<MyWorldComponent>();
             CompRottable rot = t.TryGetComp<CompRottable>();
-            if (rot != null && ShowSpoilTime(__instance))
+            if (rot != null && world.ShowSpoilTime(__instance))
             {
-                MyWorldComponent world = Find.World.GetComponent<MyWorldComponent>();
                 IntRange spoilTickRange = SpoilTimeCalc.convertToTicks(world.getSpoilTime(__instance));
                 int spoilTicks = rot.TicksUntilRotAtTemp(25.0f);
                 //Log.Message($"rot ticks: {spoilTicks} ({spoilTickRange.min}, {spoilTickRange.max})");
@@ -152,24 +177,12 @@ namespace PerishableSpoilTimeFilter
             //Log.Message("IsAllowed");
         }
 
-        public static bool ShowSpoilTime(ThingFilter filter)
-        {
-            if (filter.DisplayRootCategory.catDef == ThingCategoryDefOf.CorpsesMechanoid)
-                return false;
-            if (filter.DisplayRootCategory.catDef == ThingCategoryDefOf.Root)
-                return true;
-            foreach (SpecialThingFilterDef specialThingFilterDef in filter.DisplayRootCategory.catDef.ParentsSpecialThingFilterDefs)
-                if (specialThingFilterDef.defName == SpecialThingFilterDefOf.AllowFresh.defName)
-                    return true;
-            return false;
-        }
-
         public static void DrawSpoilTimeFilterConfig(ref float y, float width, ThingFilter filter)
         {
-            if (!ShowSpoilTime(filter))
+            MyWorldComponent world = Find.World.GetComponent<MyWorldComponent>();
+            if (!world.ShowSpoilTime(filter))
                 return;
             Log.Message($"1:{filter.DisplayRootCategory.Label}");
-            MyWorldComponent world = Find.World.GetComponent<MyWorldComponent>();
             Rect rect = new Rect(20f, y, width - 20f, 28f);
             ref IntRange local = ref world.getSpoilTime(filter);
             IntRange spoilTicks = SpoilTimeCalc.convertToTicks(local);
@@ -187,10 +200,10 @@ namespace PerishableSpoilTimeFilter
             if (Find.World == null)
                 return;
 
-            if (!ShowSpoilTime(__instance))
-                return;
-
             MyWorldComponent world = Find.World.GetComponent<MyWorldComponent>();
+
+            if (!world.ShowSpoilTime(__instance))
+                return;
 
             ref IntRange local = ref world.getSpoilTime(__instance);
             Scribe_Values.Look<IntRange>(ref local, "MrHacky.allowedPerishableSpoilTimes", new IntRange(0, 30), false);
@@ -198,10 +211,10 @@ namespace PerishableSpoilTimeFilter
 
         public static void CopyAllowancesFrom_Postfix(ThingFilter __instance, ThingFilter other)
         {
-            if (!ShowSpoilTime(__instance) || !ShowSpoilTime(other))
-                return;
-
             MyWorldComponent world = Find.World.GetComponent<MyWorldComponent>();
+
+            if (!world.ShowSpoilTime(__instance) || !world.ShowSpoilTime(other))
+                return;
 
             ref IntRange local = ref world.getSpoilTime(__instance);
             local = world.getSpoilTime(other);
