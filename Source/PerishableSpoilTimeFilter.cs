@@ -147,7 +147,7 @@ namespace PerishableSpoilTimeFilter
 
         public static bool Translate_Prefix(string key, ref TaggedString __result)
         {
-            if (key.StartsWith(MagicTranslatePrefix))
+            if (key != null && key.StartsWith(MagicTranslatePrefix))
             {
                 __result = key.Substring(MagicTranslatePrefix.Length);
                 return false;
