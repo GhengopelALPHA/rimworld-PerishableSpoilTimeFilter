@@ -49,7 +49,7 @@ namespace PerishableSpoilTimeFilter
         {
             if (spoilTime == -1)
                 return "SpoilTime_Forever".Translate();
-            return spoilTime.ToStringTicksToPeriod(false, false, false, true);
+            return spoilTime.ToStringTicksToPeriod(false, false, false, true, false);
         }
 
         public static string spoilTimeTicksToString(IntRange spoilTicks)
